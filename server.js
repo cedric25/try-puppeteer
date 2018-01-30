@@ -1,3 +1,4 @@
+const fs = require('fs')
 const express = require('express')
 
 const app = express()
@@ -6,25 +7,42 @@ app.all('*', processRequest)
 
 async function processRequest(req, res) {
 
-  console.log('req.url', req.url)
+  console.log('-----')
+  console.log('NEW REQUEST:', req.url)
   const handlerName = req.url.substring(1)
-  console.log('handlerName', handlerName)
+
+  // Checking handler
+  console.log('Checking handler:', handlerName)
+  const handler = findHandler(handlerName)
+  if (!handler) {
+    // Todo: Send list of available handlers
+    fs.readdir('./handlers', (err, dirContent) => {
+      if (err) {
+        console.error(`Could not read the content of the 'handlers' directory...`)
+        res.send({
+          errorMessage: `Could not find handlers/${handlerName}.js, you sure you're calling the right endpoint?`
+        })
+        return
+      }
+      console.log(dirContent)
+      res.send({
+        errorMessage: `Could not find 'handlers/${handlerName}.js', available handlers: ${dirContent.join(', ')}`
+      })
+    })
+    return
+  }
+  console.log('Handler valid')
 
   try {
-    const handler = findHandler(handlerName)
-    // const handler = require(`./handlers/applicationStatus`)
     console.log('Calling handler...')
-    const answer = await handler.handle()
-    // console.log('answer:', answer)
+    const answer = await handler.handleRequest()
+    console.log('answer:', answer)
     res.send({
       answer
     })
   } catch (err) {
     console.error(err)
-    res.send({
-      message: `Could not find handlers/${handlerName}.js, you sure to call the right endpoint?`,
-      error: err
-    })
+    res.send(err)
   }
 }
 
@@ -35,7 +53,7 @@ function findHandler(handlerName) {
   try {
     return require(`./handlers/${handlerName}`)
   } catch (err) {
-    throw err
+    return null
   }
 }
 
