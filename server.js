@@ -2,7 +2,9 @@ const express = require('express')
 
 const app = express()
 
-app.all('*', (async function (req, res) {
+app.all('*', processRequest)
+
+async function processRequest(req, res) {
 
   console.log('req.url', req.url)
   const handlerName = req.url.substring(1)
@@ -10,9 +12,10 @@ app.all('*', (async function (req, res) {
 
   try {
     const handler = findHandler(handlerName)
+    // const handler = require(`./handlers/applicationStatus`)
     console.log('Calling handler...')
     const answer = await handler.handle()
-    console.log('answer:', answer)
+    // console.log('answer:', answer)
     res.send({
       answer
     })
@@ -23,7 +26,10 @@ app.all('*', (async function (req, res) {
       error: err
     })
   }
-}))
+}
+
+// processRequest({ url: '/applicationStatus' })
+//   .then(() => 'ok')
 
 function findHandler(handlerName) {
   try {
