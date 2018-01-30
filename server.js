@@ -1,11 +1,27 @@
-const fs = require('fs')
 const express = require('express')
+const { getAvailableHandlers } = require('./utils/utils')
 
 const app = express()
+
+app.get('/list', (req, res) => {
+  getAvailableHandlers()
+    .then(answer => {
+      res.send({
+        answer
+      })
+    })
+    .catch(err => {
+      res.send({
+        errorMessage: err
+      })
+    })
+})
 
 app.all('*', processRequest)
 
 async function processRequest(req, res) {
+
+  const start = Date.now()
 
   console.log('-----')
   console.log('NEW REQUEST:', req.url)
@@ -15,20 +31,19 @@ async function processRequest(req, res) {
   console.log('Checking handler:', handlerName)
   const handler = findHandler(handlerName)
   if (!handler) {
-    // Todo: Send list of available handlers
-    fs.readdir('./handlers', (err, dirContent) => {
-      if (err) {
-        console.error(`Could not read the content of the 'handlers' directory...`)
+    getAvailableHandlers()
+      .then(dirContent => {
+        res.send({
+          errorMessage: `Could not find 'handlers/${handlerName}.js'`,
+          availableHandlers: dirContent,
+        })
+      })
+      .catch(err => {
+        console.error(`Could not read the content of the 'handlers' directory...`, err)
         res.send({
           errorMessage: `Could not find handlers/${handlerName}.js, you sure you're calling the right endpoint?`
         })
-        return
-      }
-      console.log(dirContent)
-      res.send({
-        errorMessage: `Could not find 'handlers/${handlerName}.js', available handlers: ${dirContent.join(', ')}`
       })
-    })
     return
   }
   console.log('Handler valid')
@@ -37,8 +52,10 @@ async function processRequest(req, res) {
     console.log('Calling handler...')
     const answer = await handler.handleRequest()
     console.log('answer:', answer)
+    const totalTime = Date.now() - start
     res.send({
-      answer
+      answer,
+      totalSeconds: Math.round( totalTime / 1000 * 10 ) / 10
     })
   } catch (err) {
     console.error(err)
