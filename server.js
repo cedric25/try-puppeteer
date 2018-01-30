@@ -17,7 +17,13 @@ app.get('/list', (req, res) => {
     })
 })
 
-app.all('*', processRequest)
+app.all('*', (req, res) => {
+  processRequest(req, res)
+    .catch(err => {
+      console.log('Something went wrong...', err)
+      res.send(`Something went wrong... ${err.toString()}`)
+    })
+})
 
 async function processRequest(req, res) {
 
