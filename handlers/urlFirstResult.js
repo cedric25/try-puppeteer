@@ -10,15 +10,9 @@ async function handleRequest() {
   const page = await getNewPage(browser)
 
   await page.goto('https://google.com')
-  await page.screenshot({
-    path: 'screenshots/01_arrivingAtPage.png'
-  })
 
   // Type in search box
   await page.type('#lst-ib', 'kiwi')
-  await page.screenshot({
-    path: 'screenshots/02_afterTyping.png'
-  })
 
   // Submit search form
   const googleSearchButton = await page.$('input[type=submit]')
@@ -27,10 +21,6 @@ async function handleRequest() {
   console.log('waitForNavigation()...')
   await page.waitForNavigation()
   console.log('After waitForNavigation()')
-
-  await page.screenshot({
-    path: 'screenshots/03_afterPressingEnter.png'
-  })
 
   let firstResultTitle = ''
 
