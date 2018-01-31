@@ -1,4 +1,5 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const { getAvailableHandlers } = require('./utils/utils')
 
 const app = express()
@@ -39,11 +40,13 @@ app.get('/list', (req, res) => {
 /**
  * Examples of requests:
  *  - No param:
- *      > /titleFirstResult
+ *      > GET /titleFirstResult
  *  - One param within URL:
- *      > /titleFirstResult/tomato
+ *      > GET /titleFirstResult/tomato
  *  - One or more params with querystring:
- *      > /titleFirstResult?searchTerm=tomato
+ *      > GET /titleFirstResult?searchTerm=tomato
+ *  - POST request with a JSON body
+ *      > POST /titleFirstResult with { "searchTerm": "tomato" }
  */
 
 // --------------- Register all handlers ---------------
@@ -51,10 +54,7 @@ getAvailableHandlers()
   .then(dirContent => {
     dirContent.forEach(handlerName => {
       console.log(`Registering: ${handlerName}`)
-      app.all([`/${handlerName}`, `/${handlerName}/:param`], (req, res) => {
-
-        const params = Object.assign({}, { urlParam: req.params.param }, req.query)
-
+      app.all([`/${handlerName}`, `/${handlerName}/:param`], bodyParser.json(), (req, res) => {
         processRequest(req, res, params)
           .catch(err => {
             console.log('Something went wrong...', err)
@@ -82,6 +82,14 @@ async function processRequest(req, res, params) {
 
   console.log('-----')
   console.log('NEW REQUEST:', req.url)
+
+  console.log('req.params', req.params)
+  console.log('req.query', req.query)
+  console.log('req.body', req.body)
+
+  const params = Object.assign({}, { urlParam: req.params.param }, req.query, req.body)
+  console.log('Built args:', params)
+
   const handlerName = getHandlerNameFromUrl(req.url)
   console.log('handlerName', handlerName)
   const handler = importHandler(handlerName)
