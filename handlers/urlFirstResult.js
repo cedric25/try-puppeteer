@@ -4,7 +4,14 @@ const {
   closeBrowser,
 } = require('../utils/utils')
 
-async function handleRequest() {
+async function handleRequest(args) {
+
+  const searchTerm = args.urlParam || args.searchTerm
+
+  if (!searchTerm) {
+    console.log('/!\\ Search term empty...')
+    throw new Error('/!\\ Search term empty...')
+  }
 
   const browser = await launchBrowser()
   const page = await getNewPage(browser)
@@ -12,7 +19,7 @@ async function handleRequest() {
   await page.goto('https://google.com')
 
   // Type in search box
-  await page.type('#lst-ib', 'kiwi')
+  await page.type('#lst-ib', searchTerm)
 
   // Submit search form
   const googleSearchButton = await page.$('input[type=submit]')
