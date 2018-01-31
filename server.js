@@ -3,7 +3,23 @@ const { getAvailableHandlers } = require('./utils/utils')
 
 const app = express()
 
+app.get('/', (req, res) => {
+  console.log(`--> '/' called`)
+  getAvailableHandlers()
+    .then(answer => {
+      res.send({
+        message: 'Hello',
+        availableHandlers: answer,
+      })
+    })
+    .catch(err => {
+      console.log(err)
+      res.send('Hello')
+    })
+})
+
 app.get('/list', (req, res) => {
+  console.log(`--> '/list' called`)
   getAvailableHandlers()
     .then(answer => {
       res.send({
@@ -11,6 +27,7 @@ app.get('/list', (req, res) => {
       })
     })
     .catch(err => {
+      console.log(err)
       res.send({
         errorMessage: err
       })
@@ -32,6 +49,8 @@ async function processRequest(req, res) {
   console.log('-----')
   console.log('NEW REQUEST:', req.url)
   const handlerName = req.url.substring(1)
+
+  // Todo: Use first param as the Google term to look for!
 
   // Checking handler
   console.log('Checking handler:', handlerName)
