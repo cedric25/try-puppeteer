@@ -55,7 +55,7 @@ getAvailableHandlers()
     dirContent.forEach(handlerName => {
       console.log(`Registering: ${handlerName}`)
       app.all([`/${handlerName}`, `/${handlerName}/:param`], bodyParser.json(), (req, res) => {
-        processRequest(req, res, params)
+        processRequest(req, res)
           .catch(err => {
             console.log('Something went wrong...', err)
             res.send(`Something went wrong... ${err.toString()}`)
@@ -76,7 +76,7 @@ getAvailableHandlers()
     console('Error at reading /handlers directory content...', err)
   })
 
-async function processRequest(req, res, params) {
+async function processRequest(req, res) {
 
   const start = Date.now()
 
