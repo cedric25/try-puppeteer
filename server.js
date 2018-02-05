@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { getAvailableHandlers } = require('./utils/utils')
+const { wrapHandler } = require('./utils/wrapHandler')
 
 const app = express()
 
@@ -87,7 +88,7 @@ async function processRequest(req, res) {
   console.log('req.query', req.query)
   console.log('req.body', req.body)
 
-  const params = Object.assign({}, { urlParam: req.params.param }, req.query, req.body)
+  const params = Object.assign({}, { urlParam: req.params && req.params.param }, req.query, req.body)
   console.log('Built args:', params)
 
   const handlerName = getHandlerNameFromUrl(req.url)
@@ -96,7 +97,7 @@ async function processRequest(req, res) {
 
   try {
     console.log('Calling handler...')
-    const answer = await handler.handleRequest(params)
+    const answer = await wrapHandler(handler, params)
     console.log('answer:', answer)
     const totalTime = Date.now() - start
     res.send({
@@ -114,7 +115,14 @@ function getHandlerNameFromUrl(url) {
   return handlerRegexMatch && handlerRegexMatch[1]
 }
 
-// processRequest({ url: '/applicationStatus' })
+// Test without having to call an endpoint
+// processRequest({
+//   url: '/titleFirstResult', query: { searchTerm: 'etoile' }
+// }, {
+//   send() {
+//     console.log('send!')
+//   }
+// })
 //   .then(() => 'ok')
 
 function importHandler(handlerName) {
