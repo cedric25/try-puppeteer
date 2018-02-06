@@ -2,6 +2,12 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const { getAvailableHandlers } = require('./utils/utils')
 const { wrapHandler } = require('./utils/wrapHandler')
+const { getFileLogger } = require('./fileLogger')
+
+// Also log to a file if 'LOGFILE' env var is set
+if (process.env.LOGFILE) {
+  console.log = getFileLogger()
+}
 
 const app = express()
 
